@@ -3,12 +3,81 @@
 
 #include "pitches.hpp"
 
-
 TaskHandle_t RestartByBtn;
 
 Adafruit_MCP23X17 mcp;
 
 #define BUZZER_PIN 19
+
+int zeroMelody[] = {
+  REST, NOTE_E5, NOTE_D5, NOTE_C5, NOTE_B4, NOTE_A4, NOTE_G4, NOTE_A4, NOTE_B4,
+  NOTE_G5, NOTE_E5, NOTE_F5, NOTE_G5, NOTE_E5, NOTE_F5, NOTE_G5, REST,
+  NOTE_E5, NOTE_C5, NOTE_D5, NOTE_E5, NOTE_C5, NOTE_D5, NOTE_E5, NOTE_C5, NOTE_D5, NOTE_E5, NOTE_D5, NOTE_C5,
+  NOTE_A4, NOTE_A4, REST, NOTE_A4, NOTE_A4, NOTE_G4, NOTE_A4, NOTE_G4, NOTE_G4, REST, NOTE_G4,
+  NOTE_A4, NOTE_A4, NOTE_A4, NOTE_A4, NOTE_C5, NOTE_B4,
+  NOTE_G5, NOTE_E5, NOTE_F5, NOTE_G5, NOTE_E5, NOTE_F5, NOTE_G5,
+  NOTE_E5, NOTE_C5, NOTE_D5, NOTE_E5, NOTE_C5, NOTE_D5, NOTE_E5, NOTE_C5, NOTE_D5, NOTE_E5, NOTE_D5, NOTE_C5,
+  NOTE_A4, NOTE_A4, REST, NOTE_A4, NOTE_A4, NOTE_G4, NOTE_A4, NOTE_G4, NOTE_G4, REST, NOTE_G4, NOTE_G4,
+  NOTE_A4, NOTE_A4, NOTE_A4, REST, NOTE_A4, NOTE_C5, NOTE_B4, NOTE_B4, NOTE_B4, NOTE_B4, NOTE_C5, REST,
+  REST
+};
+
+int zeroDurations[] = {
+  4, 2, 2, 2, 2, 2, 2, 2, 4,
+  4, 8, 8, 4, 8, 8, 2, 2,
+  4, 8, 8, 4, 8, 8, 4, 8, 8, 4, 8, 8,
+  4, 8, 8, 4, 8, 8, 8, 8, 2, 8, 8,
+  8, 8, 4, 4, 4, 1,
+  4, 8, 8, 4, 8, 8, 1,
+  4, 8, 8, 4, 8, 8, 4, 8, 8, 4, 8, 8,
+  4, 8, 8, 4, 8, 8, 8, 8, 4, 4, 8, 8,
+  8, 8, 8, 8, 4, 4, 8, 8, 4, 4, 8, 8,
+  1
+};
+
+
+
+int oneMelody[] = {
+  REST, REST, REST, NOTE_DS4, 
+  NOTE_E4, REST, NOTE_FS4, NOTE_G4, REST, NOTE_DS4,
+  NOTE_E4, NOTE_FS4,  NOTE_G4, NOTE_C5, NOTE_B4, NOTE_E4, NOTE_G4, NOTE_B4,   
+  NOTE_AS4, NOTE_A4, NOTE_G4, NOTE_E4, NOTE_D4, 
+  NOTE_E4, REST, REST, NOTE_DS4,
+  
+  NOTE_E4, REST, NOTE_FS4, NOTE_G4, REST, NOTE_DS4,
+  NOTE_E4, NOTE_FS4,  NOTE_G4, NOTE_C5, NOTE_B4, NOTE_G4, NOTE_B4, NOTE_E5,
+  NOTE_DS5,   
+  NOTE_D5, REST, REST, NOTE_DS4, 
+  NOTE_E4, REST, NOTE_FS4, NOTE_G4, REST, NOTE_DS4,
+  NOTE_E4, NOTE_FS4,  NOTE_G4, NOTE_C5, NOTE_B4, NOTE_E4, NOTE_G4, NOTE_B4,   
+  
+  NOTE_AS4, NOTE_A4, NOTE_G4, NOTE_E4, NOTE_D4, 
+  NOTE_E4, REST,
+  REST, NOTE_E5, NOTE_D5, NOTE_B4, NOTE_A4, NOTE_G4, NOTE_E4,
+  NOTE_AS4, NOTE_A4, NOTE_AS4, NOTE_A4, NOTE_AS4, NOTE_A4, NOTE_AS4, NOTE_A4,   
+  NOTE_G4, NOTE_E4, NOTE_D4, NOTE_E4, NOTE_E4, NOTE_E4
+};
+
+int oneDurations[] = {
+  2, 4, 8, 8, 
+  4, 8, 8, 4, 8, 8,
+  8, 8,  8, 8, 8, 8, 8, 8,   
+  2, 16, 16, 16, 16, 
+  2, 4, 8, 4,
+  
+  4, 8, 8, 4, 8, 8,
+  8, 8,  8, 8, 8, 8, 8, 8,
+  1,   
+  2, 4, 8, 8, 
+  4, 8, 8, 4, 8, 8,
+  8, 8,  8, 8, 8, 8, 8, 8,   
+  
+  2, 16, 16, 16, 16, 
+  4, 4,
+  4, 8, 8, 8, 8, 8, 8,
+  16, 8, 16, 8, 16, 8, 16, 8,   
+  16, 16, 16, 16, 16, 2
+};
 
 int twoMelody[] = {
   NOTE_E5, NOTE_D5, NOTE_A4, NOTE_F4,
@@ -130,7 +199,11 @@ void loop() {
   for (uint8_t btn = 0; btn < 6; btn++) {
     if (!mcp.digitalRead(btn)) {
       Serial.print("\n " + (String)btn);
-      if (btn == 2) {
+      if (btn == 0) {
+        playMelody(zeroMelody, zeroDurations, sizeof(zeroMelody) / sizeof(int));
+      } else if (btn == 1) {
+        playMelody(oneMelody, oneDurations, sizeof(oneMelody) / sizeof(int));
+      } else if (btn == 2) {
         playMelody(twoMelody, twoDurations, sizeof(twoMelody) / sizeof(int));
       } else if (btn == 3) {
         playMelody(threeMelody, threeDurations, sizeof(threeDurations) / sizeof(int));
