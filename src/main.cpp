@@ -10,21 +10,31 @@ Adafruit_MCP23X17 mcp;
 
 #define BUZZER_PIN 19
 
+int twoMelody[] = {
+  NOTE_E5, NOTE_D5, NOTE_A4, NOTE_F4,
+  NOTE_E5, NOTE_D5, NOTE_A4, NOTE_F4,
+  NOTE_C5, NOTE_AS4, NOTE_F4, NOTE_D4,
+  NOTE_C5, NOTE_AS4, NOTE_F4, 
+  NOTE_AS4, NOTE_A4, NOTE_F4, NOTE_D4, NOTE_AS3
+};
+
+int twoDurations[] = {
+  3, 5, 3, 3,
+  3, 5, 3, 3,
+  3, 5, 3, 3,
+  3, 5, 2,
+  3, 5, 3, 3, 1,
+};
+
 int threeMelody[] = {
   NOTE_B4, NOTE_B4, NOTE_B4, NOTE_D5, NOTE_C5, NOTE_B4, NOTE_B4, 
-  NOTE_E4, NOTE_B4, NOTE_D5, NOTE_C5, NOTE_B4, NOTE_B4, NOTE_B4, NOTE_D5, NOTE_C5, NOTE_B4, NOTE_B4, 
-  NOTE_E4, NOTE_B4, NOTE_E4, NOTE_E4, NOTE_E4, NOTE_E4, 
-  NOTE_B4, NOTE_B4, NOTE_B4, NOTE_B4, NOTE_D5, NOTE_C5, NOTE_B4, NOTE_B4, 
-  NOTE_E4, NOTE_B4, NOTE_D5, NOTE_C5, NOTE_B4, NOTE_B4
+  NOTE_E4, NOTE_B4, NOTE_D5, NOTE_C5, NOTE_B4, NOTE_B4, NOTE_B4, NOTE_D5, NOTE_C5, NOTE_B4
 
 };
 
 int threeDurations[] = {
   3, 3, 3, 3, 4, 3, 4, 
-  5, 3, 3, 4, 3, 3, 3, 3, 4, 3, 4, 
-  5, 4, 8, 8, 8, 8, 
-  3, 3, 3, 3, 3, 4, 3, 4, 
-  5, 3, 3, 4, 3, 3
+  5, 3, 3, 4, 3, 3, 3, 3, 4, 3
 };
 
 int fourMelody[] = {
@@ -72,11 +82,13 @@ int fiveDurations[] = {4, 8, 4, 4, 4, 2, 4, 8, 4, 4, 4, 2, 4, 8,
 bool cancellation = false;
 
 void RestartByBtnCode(void* parameter) {
+  delay(1000);
   for (;;) {
-    if (!mcp.digitalRead(7)) {
-      cancellation = true;
-    }
     delay(30);
+    if (!mcp.digitalRead(6) && !cancellation) {
+      cancellation = true;
+      Serial.println("CANCELLATION");
+    }
   }
 }
 
@@ -96,57 +108,36 @@ void setup() {
   Serial.println("Looping...");
 }
 
+void playMelody(int melody[], int durations[], int size) {
+  cancellation = false;
+  for (int note = 0; note < size; note++) {
+    if (cancellation) {
+      Serial.println("LEAVING");
+      cancellation = false;
+      return;
+    }
+    int duration = 1000 / durations[note];
+    tone(BUZZER_PIN, melody[note], duration);
+
+    int pauseBetweenNotes = duration * 1.30;
+    delay(pauseBetweenNotes);
+    noTone(BUZZER_PIN);
+  }
+}
+
+
 void loop() {
   for (uint8_t btn = 0; btn < 6; btn++) {
     if (!mcp.digitalRead(btn)) {
-      Serial.print("Button " + (String)btn);
-      if (btn == 3) {
-        int size = sizeof(threeMelody) / sizeof(int);
-
-        for (int note = 0; note < size; note++) {
-          int duration = 1000 / threeDurations[note];
-          tone(BUZZER_PIN, threeMelody[note], duration);
-
-          int pauseBetweenNotes = duration * 1.30;
-          delay(pauseBetweenNotes);
-          if (cancellation) {
-            cancellation = false;
-            return;
-          }
-          noTone(BUZZER_PIN);
-
-        }
+      Serial.print("\n " + (String)btn);
+      if (btn == 2) {
+        playMelody(twoMelody, twoDurations, sizeof(twoMelody) / sizeof(int));
+      } else if (btn == 3) {
+        playMelody(threeMelody, threeDurations, sizeof(threeDurations) / sizeof(int));
       } else if (btn == 4) {
-        int size = sizeof(fourMelody) / sizeof(int);
-
-        for (int note = 0; note < size; note++) {
-          int duration = 1000 / fourDurations[note];
-          tone(BUZZER_PIN, fourMelody[note], duration);
-
-          int pauseBetweenNotes = duration * 1.30;
-          delay(pauseBetweenNotes);
-          if (cancellation) {
-            cancellation = false;
-            return;
-          }
-          noTone(BUZZER_PIN);
-        }
+        playMelody(fourMelody, fourDurations, sizeof(fourDurations) / sizeof(int));
       } else if (btn == 5) {
-        int size = sizeof(fiveDurations) / sizeof(int);
-
-        for (int note = 0; note < size; note++) {
-          int duration = 1000 / fiveDurations[note];
-          tone(BUZZER_PIN, fiveMelody[note], duration);
-
-          int pauseBetweenNotes = duration * 1.30;
-          delay(pauseBetweenNotes);
-
-          if (cancellation) {
-            cancellation = false;
-            return;
-          }
-          noTone(BUZZER_PIN);
-        }
+        playMelody(fiveMelody, fiveDurations, sizeof(fiveDurations) / sizeof(int));
       }
     }
   }
