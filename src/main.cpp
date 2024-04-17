@@ -35,8 +35,6 @@ int zeroDurations[] = {
   1
 };
 
-
-
 int oneMelody[] = {
   REST, REST, REST, NOTE_DS4, 
   NOTE_E4, REST, NOTE_FS4, NOTE_G4, REST, NOTE_DS4,
@@ -154,10 +152,8 @@ void RestartByBtnCode(void* parameter) {
   delay(1000);
   for (;;) {
     delay(30);
-    if (!mcp.digitalRead(6) && !cancellation) {
+    if (!mcp.digitalRead(6) && !cancellation)
       cancellation = true;
-      Serial.println("CANCELLATION");
-    }
   }
 }
 
@@ -165,23 +161,17 @@ void setup() {
   pinMode(BUZZER_PIN, OUTPUT);
   xTaskCreatePinnedToCore(RestartByBtnCode, "RestartByBtn", 10000, NULL, 0,
                           &RestartByBtn, 0);
-
-  Serial.begin(115200);
   Wire.begin();
-  Serial.println("MCP23xxx Combo Test!");
 
   if (!mcp.begin_I2C(0x20)) ESP.restart();
 
   for (uint8_t i = 0; i < 7; i++) mcp.pinMode(i, INPUT_PULLUP);
-
-  Serial.println("Looping...");
 }
 
 void playMelody(int melody[], int durations[], int size) {
   cancellation = false;
   for (int note = 0; note < size; note++) {
     if (cancellation) {
-      Serial.println("LEAVING");
       cancellation = false;
       return;
     }
@@ -196,23 +186,18 @@ void playMelody(int melody[], int durations[], int size) {
 
 
 void loop() {
-  for (uint8_t btn = 0; btn < 6; btn++) {
-    if (!mcp.digitalRead(btn)) {
-      Serial.print("\n " + (String)btn);
-      if (btn == 0) {
-        playMelody(zeroMelody, zeroDurations, sizeof(zeroMelody) / sizeof(int));
-      } else if (btn == 1) {
-        playMelody(oneMelody, oneDurations, sizeof(oneMelody) / sizeof(int));
-      } else if (btn == 2) {
-        playMelody(twoMelody, twoDurations, sizeof(twoMelody) / sizeof(int));
-      } else if (btn == 3) {
-        playMelody(threeMelody, threeDurations, sizeof(threeDurations) / sizeof(int));
-      } else if (btn == 4) {
-        playMelody(fourMelody, fourDurations, sizeof(fourDurations) / sizeof(int));
-      } else if (btn == 5) {
-        playMelody(fiveMelody, fiveDurations, sizeof(fiveDurations) / sizeof(int));
-      }
+    for (uint8_t btn = 0; btn < 6; btn++) {
+        if (!mcp.digitalRead(btn)) {
+            switch (btn) {
+                case 0: playMelody(zeroMelody, zeroDurations, sizeof(zeroMelody) / sizeof(int)); break;
+                case 1: playMelody(oneMelody, oneDurations, sizeof(oneMelody) / sizeof(int)); break;
+                case 2: playMelody(twoMelody, twoDurations, sizeof(twoMelody) / sizeof(int)); break;
+                case 3: playMelody(threeMelody, threeDurations, sizeof(threeDurations) / sizeof(int)); break;
+                case 4: playMelody(fourMelody, fourDurations, sizeof(fourDurations) / sizeof(int)); break;
+                case 5: playMelody(fiveMelody, fiveDurations, sizeof(fiveDurations) / sizeof(int));break;
+                default: break;
+            }
+        }
     }
-  }
-  delay(30);
+    delay(30);
 }
